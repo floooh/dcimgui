@@ -1,9 +1,5 @@
 [![Build](https://github.com/floooh/dcimgui/actions/workflows/build.yml/badge.svg)](https://github.com/floooh/dcimgui/actions/workflows/build.yml)
 
-> [!IMPORTANT]
-> tagging v1.92.0 will be delayed until the sokol headers have been
-> ported (lot's of breaking changes around fonts and textures)
-
 A version-tagged all-in-one [Dear ImGui](https://github.com/ocornut/imgui)
 source distribution repository for C, C++ and Zig coding with:
 
