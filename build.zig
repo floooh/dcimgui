@@ -21,12 +21,12 @@ pub fn build(b: *std.Build) !void {
     // Choose source paths based on docking option
     const src_dir = if (opt_with_docking) "src-docking" else "src";
     const cimgui_cpp_files = &.{
-        b.path(try std.fmt.allocPrint(b.allocator, "{s}/cimgui.cpp", .{src_dir})),
-        b.path(try std.fmt.allocPrint(b.allocator, "{s}/imgui_demo.cpp", .{src_dir})),
-        b.path(try std.fmt.allocPrint(b.allocator, "{s}/imgui_draw.cpp", .{src_dir})),
-        b.path(try std.fmt.allocPrint(b.allocator, "{s}/imgui_tables.cpp", .{src_dir})),
-        b.path(try std.fmt.allocPrint(b.allocator, "{s}/imgui_widgets.cpp", .{src_dir})),
-        b.path(try std.fmt.allocPrint(b.allocator, "{s}/imgui.cpp", .{src_dir})),
+        try std.fmt.allocPrint(b.allocator, "{s}/cimgui.cpp", .{src_dir}),
+        try std.fmt.allocPrint(b.allocator, "{s}/imgui_demo.cpp", .{src_dir}),
+        try std.fmt.allocPrint(b.allocator, "{s}/imgui_draw.cpp", .{src_dir}),
+        try std.fmt.allocPrint(b.allocator, "{s}/imgui_tables.cpp", .{src_dir}),
+        try std.fmt.allocPrint(b.allocator, "{s}/imgui_widgets.cpp", .{src_dir}),
+        try std.fmt.allocPrint(b.allocator, "{s}/imgui.cpp", .{src_dir}),
     };
     const cimgui_h_path = b.path(try std.fmt.allocPrint(b.allocator, "{s}/cimgui.h", .{src_dir}));
 
