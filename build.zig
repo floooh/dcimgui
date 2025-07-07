@@ -9,6 +9,7 @@ pub fn build(b: *std.Build) !void {
     const optimize = b.standardOptimizeOption(.{});
 
     const opt_dynamic_linkage = b.option(bool, "dynamic_linkage", "Builds cimgui_clib artifact with dynamic linkage.") orelse false;
+    const opt_with_docking = b.option(bool, "with_docking", "Uses the docking branch of (c)ImGui") orelse false;
 
     var cflags = try std.BoundedArray([]const u8, 64).init(0);
     if (target.result.cpu.arch.isWasm()) {
@@ -16,6 +17,18 @@ pub fn build(b: *std.Build) !void {
         // but it requires linking with an ubsan runtime)
         try cflags.append("-fno-sanitize=undefined");
     }
+
+    // Choose source paths based on docking option
+    const src_dir = if (opt_with_docking) "src-docking" else "src";
+    const cimgui_cpp_files = &.{
+        b.path(std.fmt.allocPrint(b.allocator, "{s}/cimgui.cpp", .{src_dir})),
+        b.path(std.fmt.allocPrint(b.allocator, "{s}/imgui_demo.cpp", .{src_dir})),
+        b.path(std.fmt.allocPrint(b.allocator, "{s}/imgui_draw.cpp", .{src_dir})),
+        b.path(std.fmt.allocPrint(b.allocator, "{s}/imgui_tables.cpp", .{src_dir})),
+        b.path(std.fmt.allocPrint(b.allocator, "{s}/imgui_widgets.cpp", .{src_dir})),
+        b.path(std.fmt.allocPrint(b.allocator, "{s}/imgui.cpp", .{src_dir})),
+    };
+    const cimgui_h_path = b.path(std.fmt.allocPrint(b.allocator, "{s}/cimgui.h", .{src_dir}));
 
     // build cimgui_clib as a module
     const mod_cimgui_clib = b.addModule("mod_cimgui_clib", .{
@@ -25,14 +38,7 @@ pub fn build(b: *std.Build) !void {
         .link_libcpp = true,
     });
     mod_cimgui_clib.addCSourceFiles(.{
-        .files = &.{
-            "src/cimgui.cpp",
-            "src/imgui_demo.cpp",
-            "src/imgui_draw.cpp",
-            "src/imgui_tables.cpp",
-            "src/imgui_widgets.cpp",
-            "src/imgui.cpp",
-        },
+        .files = cimgui_cpp_files,
         .flags = cflags.slice(),
     });
 
@@ -49,7 +55,7 @@ pub fn build(b: *std.Build) !void {
     // NOTE: running this step with the host target is intended to avoid
     // any Emscripten header search path shenanigans
     const translateC = b.addTranslateC(.{
-        .root_source_file = b.path("src/cimgui.h"),
+        .root_source_file = cimgui_h_path,
         .target = b.graph.host,
         .optimize = optimize,
     });
@@ -63,4 +69,23 @@ pub fn build(b: *std.Build) !void {
         .link_libcpp = true,
     });
     mod_cimgui.linkLibrary(lib_cimgui);
+
+    // Only create an DearImGUI internal API Zig module if docking is enabled
+    if (opt_with_docking) {
+        const cimgui_internal_h_path = b.path("src-docking/cimgui_internal.h");
+        const translateCInternal = b.addTranslateC(.{
+            .root_source_file = cimgui_internal_h_path,
+            .target = b.graph.host,
+            .optimize = optimize,
+        });
+        const mod_cimgui_internal = b.addModule("cimgui_internal", .{
+            .root_source_file = translateCInternal.getOutput(),
+            .target = target,
+            .optimize = optimize,
+            .link_libc = true,
+            .link_libcpp = true,
+        });
+        // Make the internal module depend on the main one:
+        mod_cimgui_internal.addImport("cimgui", mod_cimgui);
+    }
 }
