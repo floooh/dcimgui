@@ -20,14 +20,18 @@ pub fn build(b: *std.Build) !void {
 
     // Choose source paths based on docking option
     const src_dir = if (opt_with_docking) "src-docking" else "src";
-    const cimgui_cpp_files = &.{
-        try std.fmt.allocPrint(b.allocator, "{s}/cimgui.cpp", .{src_dir}),
-        try std.fmt.allocPrint(b.allocator, "{s}/imgui_demo.cpp", .{src_dir}),
-        try std.fmt.allocPrint(b.allocator, "{s}/imgui_draw.cpp", .{src_dir}),
-        try std.fmt.allocPrint(b.allocator, "{s}/imgui_tables.cpp", .{src_dir}),
-        try std.fmt.allocPrint(b.allocator, "{s}/imgui_widgets.cpp", .{src_dir}),
-        try std.fmt.allocPrint(b.allocator, "{s}/imgui.cpp", .{src_dir}),
-    };
+    var cimgui_cpp_files = std.ArrayList([]const u8).init(b.allocator);
+    try cimgui_cpp_files.append(try std.fmt.allocPrint(b.allocator, "{s}/cimgui.cpp", .{src_dir}));
+    try cimgui_cpp_files.append(try std.fmt.allocPrint(b.allocator, "{s}/imgui_demo.cpp", .{src_dir}));
+    try cimgui_cpp_files.append(try std.fmt.allocPrint(b.allocator, "{s}/imgui_draw.cpp", .{src_dir}));
+    try cimgui_cpp_files.append(try std.fmt.allocPrint(b.allocator, "{s}/imgui_tables.cpp", .{src_dir}));
+    try cimgui_cpp_files.append(try std.fmt.allocPrint(b.allocator, "{s}/imgui_widgets.cpp", .{src_dir}));
+    try cimgui_cpp_files.append(try std.fmt.allocPrint(b.allocator, "{s}/imgui.cpp", .{src_dir}));
+    
+    // Add internal API implementation if using docking
+    if (opt_with_docking) {
+        try cimgui_cpp_files.append(try std.fmt.allocPrint(b.allocator, "{s}/cimgui_internal.cpp", .{src_dir}));
+    }
     const cimgui_h_path = b.path(try std.fmt.allocPrint(b.allocator, "{s}/cimgui.h", .{src_dir}));
 
     // build cimgui_clib as a module
@@ -38,7 +42,7 @@ pub fn build(b: *std.Build) !void {
         .link_libcpp = true,
     });
     mod_cimgui_clib.addCSourceFiles(.{
-        .files = cimgui_cpp_files,
+        .files = cimgui_cpp_files.items,
         .flags = cflags.slice(),
     });
 
@@ -87,5 +91,6 @@ pub fn build(b: *std.Build) !void {
         });
         // Make the internal module depend on the main one:
         mod_cimgui_internal.addImport("cimgui", mod_cimgui);
+        mod_cimgui_internal.linkLibrary(lib_cimgui);
     }
 }

@@ -3,8 +3,6 @@
 // https://github.com/dearimgui/dear_bindings
 
 // dear imgui, v1.92.0
-struct ImVector_ImFontBakedPtr_t { int Size; int Capacity; ImFontBaked** Data; };  // Instantiation of ImVector<ImFontBaked*>
-struct ImVector_ImFontAtlasPtr_t { int Size; int Capacity; ImFontAtlas** Data; };  // Instantiation of ImVector<ImFontAtlas*>
 // (internal structures/api)
 
 // You may use this file to debug, understand or extend Dear ImGui features but we don't provide any guarantee of forward compatibility.
@@ -61,7 +59,7 @@ extern "C"
 //-----------------------------------------------------------------------------
 
 #ifndef IMGUI_VERSION
-#include "imgui.h"
+#include "cimgui.h"
 #endif // #ifndef IMGUI_VERSION
 #include <stdio.h>
 #include <stdlib.h>
@@ -80,6 +78,11 @@ extern "C"
 #if defined(IMGUI_ENABLE_SSE4_2)&&!defined(IMGUI_USE_LEGACY_CRC32_ADLER)&&!defined(__EMSCRIPTEN__)
 #define IMGUI_ENABLE_SSE4_2_CRC
 #endif // #if defined(IMGUI_ENABLE_SSE4_2)&&!defined(IMGUI_USE_LEGACY_CRC32_ADLER)&&!defined(__EMSCRIPTEN__)
+
+// Forward declarations for internal types
+struct ImVector_ImFontBakedPtr_t { int Size; int Capacity; ImFontBaked** Data; };  // Instantiation of ImVector<ImFontBaked*>
+struct ImVector_ImFontAtlasPtr_t { int Size; int Capacity; ImFontAtlas** Data; };  // Instantiation of ImVector<ImFontAtlas*>
+
 // Visual Studio warnings
 #ifdef _MSC_VER
 #pragma warning (push)
