@@ -1,66 +1,125 @@
-// NOTE: unfortunately switching to the 'prefix-less' functions in
-// zimgui.h isn't that easy because some Dear ImGui functions collide
-// with Win32 function (Set/GetCursorPos and Set/GetWindowPos).
 const std = @import("std");
-const builtin = @import("builtin");
+const Build = std.Build;
+
+const imgui_sources = [_][]const u8{
+    "cimgui.cpp",
+    "cimgui_internal.cpp",
+    "imgui_demo.cpp",
+    "imgui_draw.cpp",
+    "imgui_tables.cpp",
+    "imgui_widgets.cpp",
+    "imgui.cpp",
+};
+
+// returned by the getConfig() helper function to get a matching
+// set of module name, C header path and C library name for
+// vanilla imgui vs imgui docking branch (because mismatches
+// may appear to build but then cause hilarious runtime bugs)
+pub const Config = struct {
+    module_name: []const u8, // cimgui or cimgui_docking
+    include_dir: []const u8, // src or src-docking
+    clib_name: []const u8, // cimgui_clib or cimgui_docking_clib
+};
+
+// helper function to return a matching set of Zig module name,
+// C header search path and C library name for docking vs non-docking
+pub fn getConfig(docking: bool) Config {
+    if (docking) {
+        return .{
+            .module_name = "cimgui_docking",
+            .include_dir = "src-docking",
+            .clib_name = "cimgui_docking_clib",
+        };
+    } else {
+        return .{
+            .module_name = "cimgui",
+            .include_dir = "src",
+            .clib_name = "cimgui_clib",
+        };
+    }
+}
 
 pub fn build(b: *std.Build) !void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
-
     const opt_dynamic_linkage = b.option(bool, "dynamic_linkage", "Builds cimgui_clib artifact with dynamic linkage.") orelse false;
 
+    // the regular imgui module
+    try buildModule(b, .{
+        .modname = "cimgui",
+        .subdir = "src",
+        .sources = &imgui_sources,
+        .target = target,
+        .optimize = optimize,
+        .linkage = if (opt_dynamic_linkage) .dynamic else .static,
+    });
+
+    // ...and the imgui_docking module
+    try buildModule(b, .{
+        .modname = "cimgui_docking",
+        .subdir = "src-docking",
+        .sources = &imgui_sources,
+        .target = target,
+        .optimize = optimize,
+        .linkage = if (opt_dynamic_linkage) .dynamic else .static,
+    });
+}
+
+const BuildModuleOptions = struct {
+    modname: []const u8,
+    subdir: []const u8,
+    sources: []const []const u8,
+    target: Build.ResolvedTarget,
+    optimize: std.builtin.OptimizeMode,
+    linkage: std.builtin.LinkMode,
+};
+
+fn buildModule(b: *std.Build, opts: BuildModuleOptions) !void {
     var cflags = try std.BoundedArray([]const u8, 64).init(0);
-    if (target.result.cpu.arch.isWasm()) {
+    if (opts.target.result.cpu.arch.isWasm()) {
         // on WASM, switch off UBSAN (zig-cc enables this by default in debug mode)
         // but it requires linking with an ubsan runtime)
         try cflags.append("-fno-sanitize=undefined");
     }
 
-    // build cimgui_clib as a module
-    const mod_cimgui_clib = b.addModule("mod_cimgui_clib", .{
-        .target = target,
-        .optimize = optimize,
+    // build imgui into a C library
+    const mod_clib = b.addModule(b.fmt("mod_{s}_clib", .{opts.modname}), .{
+        .target = opts.target,
+        .optimize = opts.optimize,
         .link_libc = true,
         .link_libcpp = true,
     });
-    mod_cimgui_clib.addCSourceFiles(.{
-        .files = &.{
-            "src/cimgui.cpp",
-            "src/imgui_demo.cpp",
-            "src/imgui_draw.cpp",
-            "src/imgui_tables.cpp",
-            "src/imgui_widgets.cpp",
-            "src/imgui.cpp",
-        },
-        .flags = cflags.slice(),
+    for (imgui_sources) |src| {
+        mod_clib.addCSourceFile(.{
+            .file = b.path(b.fmt("{s}/{s}", .{ opts.subdir, src })),
+            .flags = cflags.slice(),
+        });
+    }
+    const clib = b.addLibrary(.{
+        .name = b.fmt("{s}_clib", .{opts.modname}),
+        .root_module = mod_clib,
+        .linkage = opts.linkage,
     });
-
-    // make cimgui available as artifact, this allows to inject
-    // the Emscripten sysroot include path in another build.zig
-    const lib_cimgui = b.addLibrary(.{
-        .name = "cimgui_clib",
-        .linkage = if (opt_dynamic_linkage) .dynamic else .static,
-        .root_module = mod_cimgui_clib,
-    });
-    b.installArtifact(lib_cimgui);
+    // make the C library available as artifact, this allows to inject
+    // the Emscripten sysroot include path in the upstream project
+    b.installArtifact(clib);
 
     // translate-c the cimgui.h file
     // NOTE: running this step with the host target is intended to avoid
     // any Emscripten header search path shenanigans
     const translateC = b.addTranslateC(.{
-        .root_source_file = b.path("src/cimgui.h"),
+        .root_source_file = b.path(b.fmt("{s}/cimgui_all.h", .{opts.subdir})),
         .target = b.graph.host,
-        .optimize = optimize,
+        .optimize = opts.optimize,
     });
 
-    // build cimgui as module
-    const mod_cimgui = b.addModule("cimgui", .{
+    // ...and the Zig module for the generated bindings
+    const mod = b.addModule(opts.modname, .{
         .root_source_file = translateC.getOutput(),
-        .target = target,
-        .optimize = optimize,
+        .target = opts.target,
+        .optimize = opts.optimize,
         .link_libc = true,
         .link_libcpp = true,
     });
-    mod_cimgui.linkLibrary(lib_cimgui);
+    mod.linkLibrary(clib);
 }
