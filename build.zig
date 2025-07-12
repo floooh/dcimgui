@@ -11,7 +11,7 @@ const imgui_sources = [_][]const u8{
     "imgui.cpp",
 };
 
-const Config = struct {
+pub const Config = struct {
     module_name: []const u8, // cimgui or cimgui_docking
     include_dir: []const u8, // src or src-docking
     clib_name: []const u8, // cimgui_clib or cimgui_docking_clib
