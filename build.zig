@@ -3,6 +3,7 @@ const Build = std.Build;
 
 const imgui_sources = [_][]const u8{
     "cimgui.cpp",
+    "cimgui_internal.cpp",
     "imgui_demo.cpp",
     "imgui_draw.cpp",
     "imgui_tables.cpp",
@@ -79,7 +80,7 @@ fn buildModule(b: *std.Build, opts: BuildModuleOptions) !void {
     // NOTE: running this step with the host target is intended to avoid
     // any Emscripten header search path shenanigans
     const translateC = b.addTranslateC(.{
-        .root_source_file = b.path(b.fmt("{s}/cimgui.h", .{opts.subdir})),
+        .root_source_file = b.path(b.fmt("{s}/cimgui_all.h", .{opts.subdir})),
         .target = b.graph.host,
         .optimize = opts.optimize,
     });
