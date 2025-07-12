@@ -11,6 +11,10 @@ const imgui_sources = [_][]const u8{
     "imgui.cpp",
 };
 
+// returned by the getConfig() helper function to get a matching
+// set of module name, C header path and C library name for
+// vanilla imgui vs imgui docking branch (because mismatches
+// may appear to build but then cause hilarious runtime bugs)
 pub const Config = struct {
     module_name: []const u8, // cimgui or cimgui_docking
     include_dir: []const u8, // src or src-docking
