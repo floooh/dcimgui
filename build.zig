@@ -75,11 +75,12 @@ const BuildModuleOptions = struct {
 };
 
 fn buildModule(b: *std.Build, opts: BuildModuleOptions) !void {
-    var cflags = try std.BoundedArray([]const u8, 64).init(0);
+    var cflags_buf: [16][]const u8 = undefined;
+    var cflags = std.ArrayListUnmanaged([]const u8).initBuffer(&cflags_buf);
     if (opts.target.result.cpu.arch.isWasm()) {
         // on WASM, switch off UBSAN (zig-cc enables this by default in debug mode)
         // but it requires linking with an ubsan runtime)
-        try cflags.append("-fno-sanitize=undefined");
+        try cflags.appendBounded("-fno-sanitize=undefined");
     }
 
     // build imgui into a C library
@@ -92,7 +93,7 @@ fn buildModule(b: *std.Build, opts: BuildModuleOptions) !void {
     for (imgui_sources) |src| {
         mod_clib.addCSourceFile(.{
             .file = b.path(b.fmt("{s}/{s}", .{ opts.subdir, src })),
-            .flags = cflags.slice(),
+            .flags = cflags.items,
         });
     }
     const clib = b.addLibrary(.{
