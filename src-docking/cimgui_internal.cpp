@@ -374,7 +374,7 @@ CIMGUI_API int         cimgui::cImParseFormatPrecision(const char* format, int d
     return ::ImParseFormatPrecision(format, default_value);
 }
 
-CIMGUI_API const char* cimgui::cImTextCharToUtf8(char out_buf[5], unsigned int c)
+CIMGUI_API int         cimgui::cImTextCharToUtf8(char out_buf[5], unsigned int c)
 {
     return ::ImTextCharToUtf8(out_buf, c);
 }
@@ -1533,6 +1533,11 @@ CIMGUI_API void cimgui::igStartMouseMovingWindowOrNode(cimgui::ImGuiWindow* wind
     ::ImGui::StartMouseMovingWindowOrNode(reinterpret_cast<::ImGuiWindow*>(window), reinterpret_cast<::ImGuiDockNode*>(node), undock);
 }
 
+CIMGUI_API void cimgui::igStopMouseMovingWindow(void)
+{
+    ::ImGui::StopMouseMovingWindow();
+}
+
 CIMGUI_API void cimgui::igUpdateMouseMovingWindowNewFrame(void)
 {
     ::ImGui::UpdateMouseMovingWindowNewFrame();
@@ -1828,9 +1833,9 @@ CIMGUI_API void   cimgui::igPushMultiItemsWidths(int components, float width_ful
     ::ImGui::PushMultiItemsWidths(components, width_full);
 }
 
-CIMGUI_API void   cimgui::igShrinkWidths(cimgui::ImGuiShrinkWidthItem* items, int count, float width_excess)
+CIMGUI_API void   cimgui::igShrinkWidths(cimgui::ImGuiShrinkWidthItem* items, int count, float width_excess, float width_min)
 {
-    ::ImGui::ShrinkWidths(reinterpret_cast<::ImGuiShrinkWidthItem*>(items), count, width_excess);
+    ::ImGui::ShrinkWidths(reinterpret_cast<::ImGuiShrinkWidthItem*>(items), count, width_excess, width_min);
 }
 
 CIMGUI_API const cimgui::ImGuiStyleVarInfo* cimgui::igGetStyleVarInfo(ImGuiStyleVar idx)
@@ -3957,6 +3962,11 @@ CIMGUI_API void         cimgui::cImFontAtlasBakedDiscard(cimgui::ImFontAtlas* at
 CIMGUI_API cimgui::ImFontGlyph* cimgui::cImFontAtlasBakedAddFontGlyph(cimgui::ImFontAtlas* atlas, cimgui::ImFontBaked* baked, cimgui::ImFontConfig* src, const cimgui::ImFontGlyph* in_glyph)
 {
     return reinterpret_cast<::cimgui::ImFontGlyph*>(::ImFontAtlasBakedAddFontGlyph(reinterpret_cast<::ImFontAtlas*>(atlas), reinterpret_cast<::ImFontBaked*>(baked), reinterpret_cast<::ImFontConfig*>(src), reinterpret_cast<const ::ImFontGlyph*>(in_glyph)));
+}
+
+CIMGUI_API void         cimgui::cImFontAtlasBakedAddFontGlyphAdvancedX(cimgui::ImFontAtlas* atlas, cimgui::ImFontBaked* baked, cimgui::ImFontConfig* src, ImWchar codepoint, float advance_x)
+{
+    ::ImFontAtlasBakedAddFontGlyphAdvancedX(reinterpret_cast<::ImFontAtlas*>(atlas), reinterpret_cast<::ImFontBaked*>(baked), reinterpret_cast<::ImFontConfig*>(src), codepoint, advance_x);
 }
 
 CIMGUI_API void         cimgui::cImFontAtlasBakedDiscardFontGlyph(cimgui::ImFontAtlas* atlas, cimgui::ImFont* font, cimgui::ImFontBaked* baked, cimgui::ImFontGlyph* glyph)
