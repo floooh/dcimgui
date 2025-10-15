@@ -2289,6 +2289,16 @@ CIMGUI_API bool cimgui::igBeginDragDropTargetCustom(cimgui::ImRect bb, ImGuiID i
     return ::ImGui::BeginDragDropTargetCustom(ConvertToCPP_ImRect(bb), id);
 }
 
+CIMGUI_API bool cimgui::igBeginDragDropTargetViewport(cimgui::ImGuiViewport* viewport)
+{
+    return ::ImGui::BeginDragDropTargetViewport(reinterpret_cast<::ImGuiViewport*>(viewport));
+}
+
+CIMGUI_API bool cimgui::igBeginDragDropTargetViewportEx(cimgui::ImGuiViewport* viewport, const cimgui::ImRect* p_bb)
+{
+    return ::ImGui::BeginDragDropTargetViewport(reinterpret_cast<::ImGuiViewport*>(viewport), reinterpret_cast<const ::ImRect*>(p_bb));
+}
+
 CIMGUI_API void cimgui::igClearDragDrop(void)
 {
     ::ImGui::ClearDragDrop();
@@ -2299,9 +2309,14 @@ CIMGUI_API bool cimgui::igIsDragDropPayloadBeingAccepted(void)
     return ::ImGui::IsDragDropPayloadBeingAccepted();
 }
 
-CIMGUI_API void cimgui::igRenderDragDropTargetRect(cimgui::ImRect bb, cimgui::ImRect item_clip_rect)
+CIMGUI_API void cimgui::igRenderDragDropTargetRectForItem(cimgui::ImRect bb)
 {
-    ::ImGui::RenderDragDropTargetRect(ConvertToCPP_ImRect(bb), ConvertToCPP_ImRect(item_clip_rect));
+    ::ImGui::RenderDragDropTargetRectForItem(ConvertToCPP_ImRect(bb));
+}
+
+CIMGUI_API void cimgui::igRenderDragDropTargetRectEx(cimgui::ImDrawList* draw_list, cimgui::ImRect bb)
+{
+    ::ImGui::RenderDragDropTargetRectEx(reinterpret_cast<::ImDrawList*>(draw_list), ConvertToCPP_ImRect(bb));
 }
 
 CIMGUI_API cimgui::ImGuiTypingSelectRequest* cimgui::igGetTypingSelectRequest(void)
