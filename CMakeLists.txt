@@ -3,6 +3,7 @@ if (FIPS_IMPORT)
     fips_begin_lib(imgui)
     fips_files(
         src/cimgui.cpp
+        src/cimgui_internal.cpp
         src/imgui_demo.cpp
         src/imgui_draw.cpp
         src/imgui_tables.cpp
@@ -12,6 +13,7 @@ if (FIPS_IMPORT)
     fips_begin_lib(imgui-docking)
     fips_files(
         src-docking/cimgui.cpp
+        src-docking/cimgui_internal.cpp
         src-docking/imgui_demo.cpp
         src-docking/imgui_draw.cpp
         src-docking/imgui_tables.cpp
@@ -24,6 +26,7 @@ else()
     project(dcimgui)
     add_library(imgui
         src/cimgui.cpp
+        src/cimgui_internal.cpp
         src/imgui_demo.cpp
         src/imgui_draw.cpp
         src/imgui_tables.cpp
@@ -31,6 +34,7 @@ else()
         src/imgui.cpp)
     add_library(imgui-docking
         src-docking/cimgui.cpp
+        src-docking/cimgui_internal.cpp
         src-docking/imgui_demo.cpp
         src-docking/imgui_draw.cpp
         src-docking/imgui_tables.cpp
