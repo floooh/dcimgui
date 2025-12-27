@@ -3,10 +3,10 @@ import { Builder } from 'jsr:@floooh/fibs';
 
 export function build(b: Builder) {
     addTarget(b, 'imgui', 'src');
-    addTarget(b, 'imgui-docking', 'src-docking');
 }
 
-function addTarget(b: Builder, name: string, subdir: string) {
+// common helper function which is also used by fibs-docking.ts
+export function addTarget(b: Builder, name: string, subdir: string) {
     b.addTarget(name, 'lib', (t) => {
         t.setDir(subdir);
         t.addSources([
