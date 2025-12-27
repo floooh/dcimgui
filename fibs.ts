@@ -16,7 +16,7 @@ function addTarget(b: Builder, name: string, subdir: string) {
             'imgui_draw.cpp',
             'imgui_tables.cpp',
             'imgui_widgets.cpp',
-            'imgui.cpp)',
+            'imgui.cpp',
         ]);
         t.addIncludeDirectories({ dirs: ['.'], scope: 'public' });
         if (b.isMsvc()) {
