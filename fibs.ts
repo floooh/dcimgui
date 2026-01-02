@@ -21,8 +21,6 @@ export function addTarget(b: Builder, name: string, subdir: string) {
         t.addIncludeDirectories({ dirs: ['.'], scope: 'public' });
         if (b.isMsvc()) {
             t.addCompileOptions(['/wd4190']);
-        } else {
-            t.addCompileOptions(['-Wno-return-type-c-linkage', '-Wno-unused-function']);
         }
     });
 }
