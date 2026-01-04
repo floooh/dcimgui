@@ -22,7 +22,7 @@ export function addTarget(b: Builder, name: string, subdir: string) {
         if (b.isMsvc()) {
             t.addCompileOptions(['/wd4190']);
         } else {
-            t.addCompileOptions(['-Wno-unused-function']);
+            t.addCompileOptions(['-Wno-unused-function'])
         }
     });
 }
