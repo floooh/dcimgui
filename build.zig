@@ -108,8 +108,11 @@ fn buildModule(b: *std.Build, opts: BuildModuleOptions) !void {
     // translate-c the cimgui.h file
     // NOTE: running this step with the host target is intended to avoid
     // any Emscripten header search path shenanigans
+    // NOTE: DO NOT USE cimgui_all.h HERE SINCE IT PULLS IN cimgui_internal.h
+    // which doesn't work with Zig's translateC step because this
+    // pulls in C bitfields which are not supported by trandlateC
     const translateC = b.addTranslateC(.{
-        .root_source_file = b.path(b.fmt("{s}/cimgui_all.h", .{opts.subdir})),
+        .root_source_file = b.path(b.fmt("{s}/cimgui.h", .{opts.subdir})),
         .target = b.graph.host,
         .optimize = opts.optimize,
     });
