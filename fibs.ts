@@ -1,5 +1,4 @@
-// deno-lint-ignore no-unversioned-import
-import { Builder } from 'jsr:@floooh/fibs';
+import { Builder } from 'jsr:@floooh/fibs@^1';
 
 export function build(b: Builder) {
     addTarget(b, 'imgui', 'src');
