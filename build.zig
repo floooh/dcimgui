@@ -1,6 +1,8 @@
 const std = @import("std");
 const Build = std.Build;
 
+const Translator = @import("translate_c").Translator;
+
 const imgui_sources = [_][]const u8{
     "cimgui.cpp",
     "cimgui_internal.cpp",
@@ -111,15 +113,15 @@ fn buildModule(b: *std.Build, opts: BuildModuleOptions) !void {
     // NOTE: DO NOT USE cimgui_all.h HERE SINCE IT PULLS IN cimgui_internal.h
     // which doesn't work with Zig's translateC step because this
     // pulls in C bitfields which are not supported by trandlateC
-    const translateC = b.addTranslateC(.{
-        .root_source_file = b.path(b.fmt("{s}/cimgui.h", .{opts.subdir})),
+    const translateC: Translator = .init(b.dependency("translate_c", .{}), .{
+        .c_source_file = b.path(b.fmt("{s}/cimgui.h", .{opts.subdir})),
         .target = b.graph.host,
         .optimize = opts.optimize,
     });
 
     // ...and the Zig module for the generated bindings
     const mod = b.addModule(opts.modname, .{
-        .root_source_file = translateC.getOutput(),
+        .root_source_file = translateC.output_file,
         .target = opts.target,
         .optimize = opts.optimize,
         .link_libc = true,
