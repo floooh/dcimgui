@@ -78,9 +78,9 @@ const BuildModuleOptions = struct {
 fn translateC(b: *std.Build, options: std.Build.Step.TranslateC.Options) ?std.Build.LazyPath {
     // FIXME: drop support for 0.15.x
     if (builtin.zig_version.minor > 15) {
-        const Translator = @import("translate_c").Translator;
         const translate_c = b.lazyDependency("translate_c", .{}) orelse return null;
-        const tc: Translator = .init(translate_c, .{
+        const translate_b = b.lazyImport(@This(), "translate_c") orelse return null;
+        const tc: translate_b.Translator = .init(translate_c, .{
             .c_source_file = options.root_source_file,
             .target = options.target,
             .optimize = options.optimize,
