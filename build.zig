@@ -1,5 +1,6 @@
 const std = @import("std");
 const Build = std.Build;
+const builtin = @import("builtin");
 
 const imgui_sources = [_][]const u8{
     "cimgui.cpp",
@@ -74,6 +75,24 @@ const BuildModuleOptions = struct {
     linkage: std.builtin.LinkMode,
 };
 
+fn translateC(b: *std.Build, options: std.Build.Step.TranslateC.Options) ?std.Build.LazyPath {
+    // FIXME: drop support for 0.15.x
+    if (builtin.zig_version.minor > 15) {
+        const dep_translate_c = b.lazyDependency("translate_c", .{}) orelse return null;
+        const mod_translate_c = b.lazyImport(@This(), "translate_c") orelse return null;
+        const tc: mod_translate_c.Translator = .init(dep_translate_c, .{
+            .c_source_file = options.root_source_file,
+            .target = options.target,
+            .optimize = options.optimize,
+            .link_libc = options.link_libc,
+        });
+        return tc.output_file;
+    } else {
+        const tc = b.addTranslateC(options);
+        return tc.getOutput();
+    }
+}
+
 fn buildModule(b: *std.Build, opts: BuildModuleOptions) !void {
     var cflags_buf: [16][]const u8 = undefined;
     var cflags = std.ArrayListUnmanaged([]const u8).initBuffer(&cflags_buf);
@@ -111,7 +130,7 @@ fn buildModule(b: *std.Build, opts: BuildModuleOptions) !void {
     // NOTE: DO NOT USE cimgui_all.h HERE SINCE IT PULLS IN cimgui_internal.h
     // which doesn't work with Zig's translateC step because this
     // pulls in C bitfields which are not supported by trandlateC
-    const translateC = b.addTranslateC(.{
+    const translate_c_file = translateC(b, .{
         .root_source_file = b.path(b.fmt("{s}/cimgui.h", .{opts.subdir})),
         .target = b.graph.host,
         .optimize = opts.optimize,
@@ -119,7 +138,7 @@ fn buildModule(b: *std.Build, opts: BuildModuleOptions) !void {
 
     // ...and the Zig module for the generated bindings
     const mod = b.addModule(opts.modname, .{
-        .root_source_file = translateC.getOutput(),
+        .root_source_file = translate_c_file,
         .target = opts.target,
         .optimize = opts.optimize,
         .link_libc = true,

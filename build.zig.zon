@@ -2,6 +2,13 @@
     .name = .cimgui,
     .version = "0.1.0",
     .fingerprint = 0x49726f5f91a580e3,
+    .dependencies = .{
+        .translate_c = .{
+            .url = "git+https://codeberg.org/ziglang/translate-c#41c10fa66ac81343c33f2b8c746f181b41eaaa27",
+            .hash = "translate_c-0.0.0-Q_BUWmzfBgB9xHX46yL5TqvhB-xdK_8LxucLXVmwQSCC",
+            .lazy = true,
+        },
+    },
     .paths = .{
         "src",
         "src-docking",
