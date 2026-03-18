@@ -21,4 +21,4 @@ jobs:
           cmake --build .
       - name: Zig
         run: |
-          zig build
+          zig build --verbose
