@@ -8,10 +8,15 @@
 #include <stdio.h>
 
 // Wrap this in a namespace to keep it separate from the C++ API
+
+// This define prevents #defines in the header getting defined again (as they are already in the normal header above),
+// and thus generating redefinition warnings
+#define DEAR_BINDINGS_INTERNAL_GLUE_CODE
 namespace cimgui
 {
 #include "cimgui.h"
 }
+#undef DEAR_BINDINGS_INTERNAL_GLUE_CODE
 
 // Manual helpers
 // These implement functionality that isn't in the original C++ API, but is useful to callers from other languages
@@ -1728,6 +1733,11 @@ CIMGUI_API void  cimgui::igSetNextItemOpen(bool is_open, ImGuiCond cond)
 CIMGUI_API void  cimgui::igSetNextItemStorageID(ImGuiID storage_id)
 {
     ::ImGui::SetNextItemStorageID(storage_id);
+}
+
+CIMGUI_API bool  cimgui::igTreeNodeGetOpen(ImGuiID storage_id)
+{
+    return ::ImGui::TreeNodeGetOpen(storage_id);
 }
 
 CIMGUI_API bool cimgui::igSelectable(const char* label)
@@ -4054,26 +4064,6 @@ CIMGUI_API cimgui::ImVec2 cimgui::igGetWindowContentRegionMin(void)
 CIMGUI_API cimgui::ImVec2 cimgui::igGetWindowContentRegionMax(void)
 {
     return ConvertFromCPP_ImVec2(::ImGui::GetWindowContentRegionMax());
-}
-
-CIMGUI_API bool   cimgui::igComboObsolete(const char* label, int* current_item, bool (*old_callback)(void* user_data, int idx, const char** out_text), void* user_data, int items_count)
-{
-    return ::ImGui::Combo(label, current_item, old_callback, user_data, items_count);
-}
-
-CIMGUI_API bool   cimgui::igComboObsoleteEx(const char* label, int* current_item, bool (*old_callback)(void* user_data, int idx, const char** out_text), void* user_data, int items_count, int popup_max_height_in_items)
-{
-    return ::ImGui::Combo(label, current_item, old_callback, user_data, items_count, popup_max_height_in_items);
-}
-
-CIMGUI_API bool   cimgui::igListBoxObsolete(const char* label, int* current_item, bool (*old_callback)(void* user_data, int idx, const char** out_text), void* user_data, int items_count)
-{
-    return ::ImGui::ListBox(label, current_item, old_callback, user_data, items_count);
-}
-
-CIMGUI_API bool   cimgui::igListBoxObsoleteEx(const char* label, int* current_item, bool (*old_callback)(void* user_data, int idx, const char** out_text), void* user_data, int items_count, int height_in_items)
-{
-    return ::ImGui::ListBox(label, current_item, old_callback, user_data, items_count, height_in_items);
 }
 
 #endif // #ifndef IMGUI_DISABLE_OBSOLETE_FUNCTIONS
