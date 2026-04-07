@@ -4,8 +4,8 @@
     .fingerprint = 0x49726f5f91a580e3,
     .dependencies = .{
         .translate_c = .{
-            .url = "git+https://codeberg.org/ziglang/translate-c#5ac39f77661a216b75b195fe74ce7d0a04b33b7d",
-            .hash = "translate_c-0.0.0-Q_BUWiv0BgBv8CnrzepLsOm4a0h_Wc1VMfleHl8TfUJO",
+            .url = "git+https://codeberg.org/ziglang/translate-c#46b5609b5ac4c0a896217d1d984f3ae50e4810b5",
+            .hash = "translate_c-0.0.0-Q_BUWpf0BgAwrh5AM-acJcslN_YPEhcoCVKbbNjwuUTJ",
             .lazy = true,
         },
     },
