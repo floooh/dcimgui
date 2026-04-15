@@ -76,21 +76,15 @@ const BuildModuleOptions = struct {
 };
 
 fn translateC(b: *std.Build, options: std.Build.Step.TranslateC.Options) ?std.Build.LazyPath {
-    // FIXME: drop support for 0.15.x
-    if (builtin.zig_version.minor > 15) {
-        const dep_translate_c = b.lazyDependency("translate_c", .{}) orelse return null;
-        const mod_translate_c = b.lazyImport(@This(), "translate_c") orelse return null;
-        const tc: mod_translate_c.Translator = .init(dep_translate_c, .{
-            .c_source_file = options.root_source_file,
-            .target = options.target,
-            .optimize = options.optimize,
-            .link_libc = options.link_libc,
-        });
-        return tc.output_file;
-    } else {
-        const tc = b.addTranslateC(options);
-        return tc.getOutput();
-    }
+    const dep_translate_c = b.lazyDependency("translate_c", .{}) orelse return null;
+    const mod_translate_c = b.lazyImport(@This(), "translate_c") orelse return null;
+    const tc: mod_translate_c.Translator = .init(dep_translate_c, .{
+        .c_source_file = options.root_source_file,
+        .target = options.target,
+        .optimize = options.optimize,
+        .link_libc = options.link_libc,
+    });
+    return tc.output_file;
 }
 
 fn buildModule(b: *std.Build, opts: BuildModuleOptions) !void {
