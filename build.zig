@@ -44,6 +44,7 @@ pub fn build(b: *std.Build) !void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
     const opt_dynamic_linkage = b.option(bool, "dynamic_linkage", "Builds cimgui_clib artifact with dynamic linkage.") orelse false;
+    const cflags: []const []const u8 = b.option([]const []const u8, "cflags", "Compiler flags for the cimgui C-C++ library.") orelse &.{};
 
     // the regular imgui module
     try buildModule(b, .{
@@ -53,6 +54,7 @@ pub fn build(b: *std.Build) !void {
         .target = target,
         .optimize = optimize,
         .linkage = if (opt_dynamic_linkage) .dynamic else .static,
+        .cflags = cflags,
     });
 
     // ...and the imgui_docking module
@@ -63,6 +65,7 @@ pub fn build(b: *std.Build) !void {
         .target = target,
         .optimize = optimize,
         .linkage = if (opt_dynamic_linkage) .dynamic else .static,
+        .cflags = cflags,
     });
 }
 
@@ -73,6 +76,7 @@ const BuildModuleOptions = struct {
     target: Build.ResolvedTarget,
     optimize: std.builtin.OptimizeMode,
     linkage: std.builtin.LinkMode,
+    cflags: []const []const u8 = &.{},
 };
 
 fn translateC(b: *std.Build, options: std.Build.Step.TranslateC.Options) ?std.Build.LazyPath {
@@ -88,12 +92,15 @@ fn translateC(b: *std.Build, options: std.Build.Step.TranslateC.Options) ?std.Bu
 }
 
 fn buildModule(b: *std.Build, opts: BuildModuleOptions) !void {
-    var cflags_buf: [16][]const u8 = undefined;
-    var cflags = std.ArrayListUnmanaged([]const u8).initBuffer(&cflags_buf);
+    var cflags = std.ArrayListUnmanaged([]const u8).initCapacity(b.allocator, 16) catch @panic("OOM");
     if (opts.target.result.cpu.arch.isWasm()) {
         // on WASM, switch off UBSAN (zig-cc enables this by default in debug mode)
         // but it requires linking with an ubsan runtime)
-        try cflags.appendBounded("-fno-sanitize=undefined");
+        try cflags.append(b.allocator, "-fno-sanitize=undefined");
+    }
+    // append any user-provided cflags
+    for (opts.cflags) |flag| {
+        try cflags.append(b.allocator, flag);
     }
 
     // build imgui into a C library
@@ -123,7 +130,7 @@ fn buildModule(b: *std.Build, opts: BuildModuleOptions) !void {
     // any Emscripten header search path shenanigans
     // NOTE: DO NOT USE cimgui_all.h HERE SINCE IT PULLS IN cimgui_internal.h
     // which doesn't work with Zig's translateC step because this
-    // pulls in C bitfields which are not supported by trandlateC
+    // pulls in C bitfields which are not supported by translateC
     const translate_c_file = translateC(b, .{
         .root_source_file = b.path(b.fmt("{s}/cimgui.h", .{opts.subdir})),
         .target = b.graph.host,
