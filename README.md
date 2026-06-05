@@ -32,6 +32,10 @@ To use the C++ API:
 
 To use the Zig module:
 
+> [!NOTE]
+> As of 05-Jun-2026 only supports Zig 0.16.0 until translate_c is fixed for
+> recent zig-0.17.0-dev breakage
+
 - add a dependency to your build.zig.zon:
     ```
     zig fetch --save=cimgui git+https://github.com/floooh/dcimgui.git
