@@ -66,16 +66,14 @@ pub fn build(b: *std.Build) !void {
     });
 }
 
-const BuildModuleOptions = struct {
-    modname: []const u8,
-    subdir: []const u8,
-    sources: []const []const u8,
-    target: Build.ResolvedTarget,
-    optimize: std.builtin.OptimizeMode,
-    linkage: std.builtin.LinkMode,
+const TranslateCOptions = struct {
+    root_source_file: std.Build.LazyPath,
+    target: std.Build.ResolvedTarget,
+    optimize: ?std.builtin.Optimize,
+    link_libc: bool = true,
 };
 
-fn translateC(b: *std.Build, options: std.Build.Step.TranslateC.Options) ?std.Build.LazyPath {
+fn translateC(b: *std.Build, options: TranslateCOptions) ?std.Build.LazyPath {
     const dep_translate_c = b.lazyDependency("translate_c", .{}) orelse return null;
     const mod_translate_c = b.lazyImport(@This(), "translate_c") orelse return null;
     const tc: mod_translate_c.Translator = .init(dep_translate_c, .{
@@ -86,6 +84,15 @@ fn translateC(b: *std.Build, options: std.Build.Step.TranslateC.Options) ?std.Bu
     });
     return tc.output_file;
 }
+
+const BuildModuleOptions = struct {
+    modname: []const u8,
+    subdir: []const u8,
+    sources: []const []const u8,
+    target: Build.ResolvedTarget,
+    optimize: ?std.builtin.OptimizeMode,
+    linkage: std.builtin.LinkMode,
+};
 
 fn buildModule(b: *std.Build, opts: BuildModuleOptions) !void {
     var cflags_buf: [16][]const u8 = undefined;
