@@ -96,7 +96,7 @@ const BuildModuleOptions = struct {
 
 fn buildModule(b: *std.Build, opts: BuildModuleOptions) !void {
     var cflags_buf: [16][]const u8 = undefined;
-    var cflags = std.ArrayListUnmanaged([]const u8).initBuffer(&cflags_buf);
+    var cflags = std.ArrayList([]const u8).initBuffer(&cflags_buf);
     if (opts.target.result.cpu.arch.isWasm()) {
         // on WASM, switch off UBSAN (zig-cc enables this by default in debug mode)
         // but it requires linking with an ubsan runtime)
